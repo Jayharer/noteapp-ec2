@@ -29,7 +29,7 @@ jobs:
       
       - name: Create ECR repo 
         run: |
-          aws ecr create-repository --repository-name ${{ env.ECR_REPO_NAME }} --region ${{ env.AWS_REGION }}
+          aws ecr create-repository --repository-name ${{ env.ECR_REPO_NAME }} --region ${{ env.AWS_REGION }} 2> /dev/null
 
       - name: Output Common variables
         run: |
