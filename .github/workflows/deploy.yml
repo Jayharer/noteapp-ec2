@@ -29,7 +29,13 @@ jobs:
       
       - name: Create ECR repo 
         run: |
-          aws ecr create-repository --repository-name ${{ env.ECR_REPO_NAME }} --region ${{ env.AWS_REGION }} 2> /dev/null
+          repo_name=$(aws ecr describe-repositories --query "repositories[?repositoryName==${{ env.ECR_REPO_NAME }}].repositoryName" --output text --region ${{ env.AWS_REGION }}")
+          if [ -z "$repo_name" ]; then
+            echo "Repository not found. Creating ECR repository: ${{ env.ECR_REPO_NAME }}"
+            aws ecr create-repository --repository-name ${{ env.ECR_REPO_NAME }} --region ${{ env.AWS_REGION }} 2>/dev/null
+          else
+            echo "Repository already exists: ${{ env.ECR_REPO_NAME }}"
+          fi
 
       - name: Output Common variables
         run: |
