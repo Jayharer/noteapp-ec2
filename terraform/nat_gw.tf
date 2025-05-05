@@ -1,7 +1,7 @@
 
 # elastic ip 
 resource "aws_eip" "ngw_eip" {
-  domain   = "vpc"
+  domain = "vpc"
 }
 
 # NAT gateway
@@ -22,7 +22,7 @@ resource "aws_route_table" "private_rtb" {
   vpc_id = aws_vpc.dev_vpc.id
   route {
     cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat_gw.id 
+    nat_gateway_id = aws_nat_gateway.nat_gw.id
   }
 
   tags = {

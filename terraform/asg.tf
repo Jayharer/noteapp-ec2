@@ -7,14 +7,19 @@ resource "aws_launch_template" "dev-lt" {
   image_id                             = "ami-0f88e80871fd81e91"
   instance_initiated_shutdown_behavior = "terminate"
   instance_type                        = "t2.micro"
-  user_data                            = filebase64("install.sh")
+  user_data = base64encode("${templatefile("${path.module}/data/install.sh", {
+    REGION        = var.AWS_REGION
+    ECR_REPO_NAME = var.ecr_repo_name
+    EFS_ID        = aws_efs_file_system.mongodb-efs.id
+    ACCOUNT_ID    = data.aws_caller_identity.current.account_id
+  })}")
 
   block_device_mappings {
     device_name = "/dev/sdf"
 
     ebs {
       delete_on_termination = "true"
-      volume_size           = 16
+      volume_size           = 8
       volume_type           = "gp2"
     }
   }
@@ -44,6 +49,7 @@ resource "aws_launch_template" "dev-lt" {
       Name = "app-instance"
     }
   }
+  depends_on = [aws_efs_file_system.mongodb-efs]
 }
 
 # placement strategy 

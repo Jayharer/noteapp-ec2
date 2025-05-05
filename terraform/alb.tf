@@ -40,6 +40,6 @@ resource "aws_lb_target_group" "dev-tg" {
     interval            = 30
     timeout             = 15
     healthy_threshold   = 3
-    unhealthy_threshold = 5
+    unhealthy_threshold = 10
   }
 }

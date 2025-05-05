@@ -17,29 +17,25 @@ systemctl start docker.service
 systemctl status docker.service
 
 # Login to ECR
-REGION="us-east-1"
-ECR_REPO_NAME="dev-ecr"
-
-ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
 ECR_REPO_URI="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${ECR_REPO_NAME}"
-aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR_REPO_URI
+aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin $ECR_REPO_URI
 
-# install nfs-utils  
-yum install -y nfs-utils  
+# install nfs-utils
+yum install -y amazon-efs-utils  
 
 # Mount the EFS Volume on the Host
 mkdir -p /mnt/efs
-mount -t nfs4 -o nfsvers=4.1 fs-050f076c609f99039.efs.us-east-1.amazonaws.com:/ /mnt/efs
+mount -t efs -o tls ${EFS_ID}:/ /mnt/efs
 
 # assign read/write permissions to container user 
-sudo chown -R 1000:1000 /mnt/efs  # if container runs as UID 1000
+chown -R 1000:1000 /mnt/efs  # if container runs as UID 1000
 
 # docker create network
 docker network create web-network
 
 # start mongodb container 
 docker pull mongo
-docker run -d --name mongodb -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e MONGO_INITDB_ROOT_PASSWORD=secret --network web-network -v /mnt/efs:/data mongo
+docker run -d --name mongodb -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e MONGO_INITDB_ROOT_PASSWORD=secret --network web-network -v /mnt/efs:/data/db mongo
 
 # start app container 
 IMAGE=$ECR_REPO_URI:myapp
